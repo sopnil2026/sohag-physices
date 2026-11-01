@@ -274,31 +274,79 @@
   V.privacy = () => head(t('priv_h')) + `<section class="sec"><div class="wrap narrow"><ul class="ticks big">
     <li>${t('priv_1')}</li><li>${t('priv_2')}</li><li>${t('priv_3')}</li><li>${t('priv_4')}</li></ul></div></section>`;
 
-  /* ---------- student dashboard (after login) ---------- */
-  V.dashboard = () => {
-    const st = Store.currentStudent();
-    if (!st) { location.hash = '#/login'; return ''; }
-    const mine = Store.db.admissions.filter(a => a.studentId === st.id);
-    const stLbl = s => t('st_' + s);
-    return head(`${t('welcome')}, ${esc(st.name)}`, `${clsLabel(st.cls)} • ${esc(st.school)}`) + `
-    <section class="sec"><div class="wrap grid-2 top">
-      <form class="card form" id="admForm"><div class="card-b">
-        <h3>${t('apply_adm')}</h3><p class="muted small">${t('adm_s')}</p>
-        <label>${t('adm_batch')}<select name="course" required>${pub('courses').map(c => `<option value="${c.id}">${esc(L(c, 'title'))}</option>`).join('')}</select></label>
-        <label>${t('adm_time')}<select name="batch" required>${Store.list('batches').slice().reverse().map(b =>
-          `<option value="${b.id}">${esc(L(b, 'branch'))} — ${esc(L(b, 'days'))}, ${esc(L(b, 'time'))}</option>`).join('')}</select></label>
-        <label>${t('adm_note')}<textarea name="note" rows="3"></textarea></label>
-        <button class="btn" type="submit">${t('adm_apply')}</button>
-      </div></form>
-      <div class="card"><div class="card-b"><h3>${t('my_adm')}</h3>
-        ${mine.length ? `<table class="tbl"><thead><tr><th>${t('adm_batch')}</th><th>${t('adm_status')}</th></tr></thead><tbody>${mine.map(a =>
-          `<tr><td>${esc(a.courseTitle)}<br><small class="muted">${esc(a.batchLabel)}</small></td><td><span class="pill ${a.status}">${stLbl(a.status)}</span></td></tr>`).join('')}</tbody></table>` : empty()}
-        <h3 class="mt">${t('profile')}</h3>
-        <p class="small">${esc(st.email)}<br>${esc(num(st.phone))}</p>
-        <p class="row"><a class="btn sm" href="#/exam">${t('exam')}</a><a class="btn sm ghost-d" href="#/logout">${t('logout')}</a></p>
-      </div></div></div></section>`;
+  /* ---------- student app (phone-style, after login) ---------- */
+  const APP = ['dashboard', 'explore', 'report', 'inbox'];
+  const ICON = {
+    dashboard: '<path d="M12 3 2 8l10 5 8-4v6h2V8L12 3zm-6 9.500V16c0 1.700 2.700 3 6 3s6-1.300 6-3v-3.500l-6 3-6-3z"/>',
+    explore: '<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm3.500 6.500-2 5-5 2 2-5 5-2z"/>',
+    report: '<path d="M11 2v9h9a9 9 0 0 0-9-9zM9 4a9 9 0 1 0 11 11h-9V4z"/>',
+    inbox: '<path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7 8-5H4l8 5zm0 2L4 8v10h16V8l-8 5z"/>'
   };
-  V.dashboard.after = () => {
+  const appShell = (st, tab, body) => {
+    const nNew = Store.list('notices').filter(n => n.published !== false && (!n.level || n.level === st.cls)).length;
+    return `<div class="phone">${body}
+      <nav class="tabbar" aria-label="App">${APP.map(k => `<a href="#/${k}" class="${k === tab ? 'on' : ''}">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">${ICON[k]}</svg>
+        <span>${t('tab_' + (k === 'dashboard' ? 'home' : k))}</span>${k === 'inbox' && nNew ? '<i class="dot"></i>' : ''}</a>`).join('')}</nav></div>`;
+  };
+  const needStudent = () => { const st = Store.currentStudent(); if (!st) { location.hash = '#/login'; return null; } return st; };
+  const greet = () => { const h = new Date().getHours(); return t(h < 12 ? 'gm' : h < 17 ? 'ga' : 'ge'); };
+
+  function streakInfo(st) {
+    const days = new Set(Store.studentLogins(st.email).map(l => new Date(l.at).toDateString()));
+    let n = 0; const d = new Date();
+    if (!days.has(d.toDateString())) d.setDate(d.getDate() - 1);
+    while (days.has(d.toDateString())) { n++; d.setDate(d.getDate() - 1); }
+    // current week, Saturday first
+    const wk = []; const t0 = new Date(); const back = (t0.getDay() + 1) % 7; t0.setDate(t0.getDate() - back);
+    for (let i = 0; i < 7; i++) { const x = new Date(t0); x.setDate(t0.getDate() + i); wk.push({ on: days.has(x.toDateString()), today: x.toDateString() === new Date().toDateString() }); }
+    return { n, wk };
+  }
+
+  V.dashboard = () => {
+    const st = needStudent(); if (!st) return '';
+    const s = S(), sk = streakInfo(st), mine = Store.db.admissions.filter(a => a.studentId === st.id);
+    return appShell(st, 'dashboard', `
+      <header class="ph-head"><div class="ph-user"><span class="av">${esc(st.name.trim()[0] || '?').toUpperCase()}</span>
+        <div><b>${greet()}, ${esc(st.name.split(' ')[0])}</b><small>${esc(st.school)}</small></div>
+        <button class="lang ph-lang" id="langBtn2" type="button">${lang === 'bn' ? 'EN' : 'বাং'}</button></div>
+        <div class="chip-sel">${esc(clsLabel(st.cls))}</div></header>
+      <div class="ph-body">
+        <div class="shortcuts">
+          <a href="#/explore"><span class="sc o">📚</span>${t('sc_courses')}</a>
+          <a href="#/explore"><span class="sc g">📝</span>${t('sc_book')}</a>
+          <a href="#/report"><span class="sc p">📊</span>${t('sc_report')}</a></div>
+        <a class="banner" href="#/explore"><small>${t('banner_s')}</small><b>${t('banner_t')}</b><span>${esc(lang === 'bn' ? s.offer_bn : s.offer_en)}</span></a>
+        <div class="ph-row"><h3>${t('streak_h')}</h3></div>
+        <div class="streak"><div class="streak-t"><b>${num(sk.n)} ${t('streak_d')}</b><small>${sk.n ? t('streak_s') : t('streak_0')}</small></div>
+          <div class="wk">${sk.wk.map((d, i) => `<div class="${d.on ? 'on' : ''} ${d.today ? 'today' : ''}"><i>${d.on ? '✓' : ''}</i><span>${I18N[lang].wk[i]}</span></div>`).join('')}</div></div>
+        <div class="ph-row"><h3>${t('my_adm')}</h3></div>
+        ${mine.length ? mine.map(a => `<div class="li"><div><b>${esc(a.courseTitle)}</b><small>${esc(a.batchLabel)}</small></div><span class="pill ${a.status}">${t('st_' + a.status)}</span></div>`).join('')
+          : `<div class="li"><div><small>${t('adm_s')}</small></div><a class="btn xs" href="#/explore">${t('apply_adm')}</a></div>`}
+        <p class="center"><a class="small" href="#/home">🌐 ${t('home_site')}</a> • <a class="small" href="#/logout">${t('logout')}</a></p>
+      </div>`);
+  };
+  V.dashboard.after = () => { const b = $('#langBtn2'); if (b) b.addEventListener('click', () => $('#langBtn').click()); };
+
+  V.explore = () => {
+    const st = needStudent(); if (!st) return '';
+    return appShell(st, 'explore', `
+      <header class="ph-head slim"><b>${t('tab_explore')}</b></header>
+      <div class="ph-body">
+        <form class="card form" id="admForm"><div class="card-b">
+          <h3>${t('apply_adm')}</h3><p class="muted small">${t('adm_s')}</p>
+          <label>${t('adm_batch')}<select name="course" required>${pub('courses').map(c => `<option value="${c.id}">${esc(L(c, 'title'))}</option>`).join('')}</select></label>
+          <label>${t('adm_time')}<select name="batch" required>${Store.list('batches').slice().reverse().map(b =>
+            `<option value="${b.id}">${esc(L(b, 'branch'))} — ${esc(L(b, 'days'))}, ${esc(L(b, 'time'))}</option>`).join('')}</select></label>
+          <label>${t('adm_note')}<textarea name="note" rows="2"></textarea></label>
+          <button class="btn block" type="submit">${t('adm_apply')}</button></div></form>
+        <div class="ph-row"><h3>${t('sec_courses')}</h3></div>
+        ${pub('courses').map(c => `<div class="li course-li">${img(c.image, '')}<div><b>${esc(L(c, 'title'))}</b><small>${esc(c.level)}</small></div></div>`).join('')}
+        <div class="ph-row"><h3>${t('exam')}</h3></div>
+        ${pub('exams').map(e => `<div class="li"><div><b>${esc(L(e, 'title'))}</b><small>${fmtDate(e.date)}</small></div>${e.link ? `<a class="btn xs" target="_blank" rel="noopener" href="${esc(e.link)}">${t('exam_open')}</a>` : ''}</div>`).join('') || `<p class="muted small center">${t('none')}</p>`}
+      </div>`);
+  };
+  V.explore.after = () => {
     const form = $('#admForm'); if (!form) return;
     form.addEventListener('submit', e => {
       e.preventDefault();
@@ -308,8 +356,29 @@
         studentId: st.id, studentName: st.name, phone: st.phone, cls: st.cls, school: st.school,
         courseTitle: L(c, 'title'), batchLabel: `${L(b, 'branch')} — ${L(b, 'days')}, ${L(b, 'time')}`, note: f.note
       });
-      toast(t('adm_done')); route();
+      toast(t('adm_done')); location.hash = '#/dashboard';
     });
+  };
+
+  V.report = () => {
+    const st = needStudent(); if (!st) return '';
+    const sk = streakInfo(st), mine = Store.db.admissions.filter(a => a.studentId === st.id);
+    return appShell(st, 'report', `
+      <header class="ph-head slim"><b>${t('tab_report')}</b></header>
+      <div class="ph-body"><div class="grid-2 tight">
+        <div class="kpi"><b>${num(Store.studentLogins(st.email).length)}</b><span>${t('rep_logins')}</span></div>
+        <div class="kpi"><b>${num(sk.n)}</b><span>${t('streak_d')}</span></div>
+        <div class="kpi"><b>${num(mine.length)}</b><span>${t('rep_adm')}</span></div>
+        <div class="kpi"><b>${num(pub('exams').length)}</b><span>${t('rep_exams')}</span></div></div>
+        <p class="muted small center">${t('rep_since')}: ${fmtDate(st.created)}</p></div>`);
+  };
+
+  V.inbox = () => {
+    const st = needStudent(); if (!st) return '';
+    const ns = Store.list('notices').filter(n => n.published !== false && (!n.level || n.level === st.cls));
+    return appShell(st, 'inbox', `
+      <header class="ph-head slim"><b>${t('inbox_h')}</b><small>${t('inbox_s')}</small></header>
+      <div class="ph-body">${ns.map(n => `<div class="li col"><small class="muted">${fmtDate(n.date)}</small><b>${esc(L(n, 'title'))}</b><p>${esc(L(n, 'desc'))}</p></div>`).join('') || `<p class="muted center">${t('no_notice')}</p>`}</div>`);
   };
 
   V.logout = () => { Store.logout(); location.hash = '#/home'; return ''; };
@@ -319,7 +388,7 @@
   /* ---------- admin panel ---------- */
   let adminTab = 'over';
   const ADMIN_TABS = [['over', 'a_over'], ['students', 'a_students'], ['adm', 'a_adm'], ['msgs', 'a_msgs'], ['courses', 'a_courses'],
-    ['blog', 'a_blog'], ['hof', 'a_hof'], ['exams', 'a_exams'], ['batches', 'a_batches'], ['teacher', 'a_teacher'], ['logins', 'a_logins'], ['settings', 'a_settings']];
+    ['blog', 'a_blog'], ['hof', 'a_hof'], ['exams', 'a_exams'], ['batches', 'a_batches'], ['notices', 'a_notices'], ['teacher', 'a_teacher'], ['logins', 'a_logins'], ['settings', 'a_settings']];
 
   V.admin = () => {
     if (!Store.isAdmin()) {
@@ -349,6 +418,7 @@
     blog: [['title_en', 't_title_en'], ['title_bn', 't_title_bn'], ['date', 't_date', 'date'], ['desc_en', 't_desc_en', 'ta'], ['desc_bn', 't_desc_bn', 'ta'], ['image', 't_image', 'img'], ['published', 't_published', 'bool']],
     hof: [['title_en', 't_title_en'], ['title_bn', 't_title_bn'], ['desc_en', 't_desc_en', 'ta'], ['desc_bn', 't_desc_bn', 'ta'], ['image', 't_image', 'img'], ['published', 't_published', 'bool']],
     exams: [['title_en', 't_title_en'], ['title_bn', 't_title_bn'], ['date', 't_date', 'date'], ['level', 't_level'], ['link', 't_link'], ['desc_en', 't_desc_en', 'ta'], ['desc_bn', 't_desc_bn', 'ta'], ['published', 't_published', 'bool']],
+    notices: [['title_en', 't_title_en'], ['title_bn', 't_title_bn'], ['date', 't_date', 'date'], ['level', 't_level'], ['desc_en', 't_desc_en', 'ta'], ['desc_bn', 't_desc_bn', 'ta'], ['published', 't_published', 'bool']],
     batches: [['branch_en', 't_name_en'], ['branch_bn', 't_name_bn'], ['days_en', 't_days'], ['days_bn', 't_days'], ['time_en', 't_time'], ['time_bn', 't_time']]
   };
   const COLTITLE = c => (c.title_en ? L(c, 'title') : (c.branch_en ? `${L(c, 'branch')} — ${L(c, 'days')} ${L(c, 'time')}` : ''));
@@ -492,6 +562,7 @@
     let name = (location.hash.replace(/^#\/?/, '') || 'home').split('?')[0];
     const view = V[name] || V['404'];
     if (!V[name]) name = '404';
+    document.body.classList.toggle('app', APP.includes(name));
     const html = view();
     if (name === 'logout') return;
     $('#main').innerHTML = html;
@@ -526,9 +597,7 @@
   /* ---------- boot ---------- */
   $('#langBtn').addEventListener('click', () => { lang = lang === 'bn' ? 'en' : 'bn'; localStorage.setItem('sp_lang', lang); route(); });
   $('#burger').addEventListener('click', () => { const o = $('#menu').classList.toggle('open'); $('#burger').setAttribute('aria-expanded', o); });
-  const applyTheme = th => document.documentElement.dataset.theme = th;
-  applyTheme(localStorage.getItem('sp_theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
-  $('#themeBtn').addEventListener('click', () => { const n = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('sp_theme', n); applyTheme(n); });
+  document.documentElement.dataset.theme = 'light';
   $$('.dd-btn').forEach(b => b.addEventListener('click', () => b.parentElement.classList.toggle('open')));
   document.addEventListener('click', e => { if (!e.target.closest('.dd')) $$('.dd').forEach(d => d.classList.remove('open')); });
   window.addEventListener('hashchange', route);

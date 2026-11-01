@@ -73,6 +73,11 @@ window.I18N = {
     created: 'Created', class_: 'Class', school: 'School', status: 'Status', actions: 'Actions', yes: 'Yes', no: 'No',
     teacher_name: 'Teacher name', teacher_role: 'Title / Role', teacher_bio: 'Bio', teacher_photo: 'Photo',
     shift: 'Time', days: 'Days', n404: 'Page not found', back_home: 'Back to home', loading: 'Loading…', open_wa: 'Chat on WhatsApp',
+    gm:'Good morning', ga:'Good afternoon', ge:'Good evening', tab_home:'Dashboard', tab_explore:'Explore', tab_report:'Learning Report', tab_inbox:'Inbox',
+    sc_courses:'My Courses', sc_book:'Admission', sc_report:'Report', streak_h:'Study streak', streak_d:'days streak', streak_0:'Start your journey today!', streak_s:'Login every day to keep your streak.',
+    wk:['Sat','Sun','Mon','Tue','Wed','Thu','Fri'], banner_t:'Class starts 15 June', banner_s:'HSC-28 physics batch — admission running', see_more:'See all',
+    rep_logins:'Total logins', rep_adm:'Admissions', rep_exams:'Exams available', rep_since:'Member since', a_notices:'Notices',
+    inbox_h:'Inbox', inbox_s:'Notices from Sohag Physics', home_site:'Website', no_notice:'No notices yet.',
     upload: 'Upload image'
   },
   bn: {
@@ -148,6 +153,11 @@ window.I18N = {
     created: 'তৈরি', class_: 'ক্লাস', school: 'স্কুল', status: 'অবস্থা', actions: 'অ্যাকশন', yes: 'হ্যাঁ', no: 'না',
     teacher_name: 'শিক্ষকের নাম', teacher_role: 'পদবি', teacher_bio: 'পরিচিতি', teacher_photo: 'ছবি',
     shift: 'সময়', days: 'দিন', n404: 'পেজ পাওয়া যায়নি', back_home: 'হোমে ফিরে যান', loading: 'লোড হচ্ছে…', open_wa: 'হোয়াটসঅ্যাপে চ্যাট',
+    gm:'শুভ সকাল', ga:'শুভ অপরাহ্ন', ge:'শুভ সন্ধ্যা', tab_home:'ড্যাশবোর্ড', tab_explore:'এক্সপ্লোর', tab_report:'লার্নিং রিপোর্ট', tab_inbox:'ইনবক্স',
+    sc_courses:'আমার কোর্সসমূহ', sc_book:'ভর্তি', sc_report:'রিপোর্ট', streak_h:'পড়াশোনার ধারাবাহিকতা', streak_d:'দিনের ধারাবাহিকতা', streak_0:'আজ থেকেই শুরু হোক শেখার যাত্রা!', streak_s:'ধারাবাহিকতা ধরে রাখতে প্রতিদিন লগইন করো।',
+    wk:['শনি','রবি','সোম','মঙ্গল','বুধ','বৃহঃ','শুক্র'], banner_t:'১৫ জুন থেকে ক্লাস শুরু', banner_s:'HSC-28 ফিজিক্স ব্যাচে ভর্তি চলছে', see_more:'বিস্তারিত',
+    rep_logins:'মোট লগইন', rep_adm:'ভর্তি আবেদন', rep_exams:'পরীক্ষা আছে', rep_since:'যোগ দিয়েছ', a_notices:'নোটিশ',
+    inbox_h:'ইনবক্স', inbox_s:'সোহাগ ফিজিক্সের নোটিশ', home_site:'ওয়েবসাইট', no_notice:'এখনো কোনো নোটিশ নেই।',
     upload: 'ছবি আপলোড'
   }
 };

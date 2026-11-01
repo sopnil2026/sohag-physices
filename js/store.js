@@ -83,6 +83,9 @@
           image: 'assets/event.png', published: true }
       ],
       exams: [],
+      notices: [
+        { id: 'n1', date: '2026-06-01', level: '', title_en: 'Welcome to Sohag Physics', title_bn: 'সোহাগ ফিজিক্সে স্বাগতম', desc_en: 'Apply for admission from the Explore tab. Classes start 15 June.', desc_bn: 'এক্সপ্লোর ট্যাব থেকে ভর্তির আবেদন করো। ক্লাস শুরু ১৫ জুন।', published: true }
+      ],
       students: [], admissions: [], messages: [], logins: []
     };
   }
@@ -91,6 +94,7 @@
   function load() {
     try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) { db = null; }
     if (!db || !db.v) { db = seed(); persist(); }
+    if (!db.notices) db.notices = [];
     return db;
   }
   function persist() {
@@ -162,6 +166,8 @@
     setAdmission(id, status) { const a = db.admissions.find(x => x.id === id); if (a) { a.status = status; persist(); } },
     addMessage(m) { m.id = uid(); m.at = now(); m.read = false; db.messages.unshift(m); persist(); },
     markRead(id) { const m = db.messages.find(x => x.id === id); if (m) { m.read = true; persist(); } },
+
+    studentLogins(email) { return db.logins.filter(l => l.who === email && l.role === 'student'); },
 
     /* ---------- helpers ---------- */
     stats() {
