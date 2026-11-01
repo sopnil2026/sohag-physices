@@ -1,0 +1,9 @@
+{
+  "name": "Sohag Physics",
+  "short_name": "Sohag Physics",
+  "start_url": "./?app=1",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b8a5f",
+  "icons": [{ "src": "assets/logo.png", "sizes": "800x800", "type": "image/png", "purpose": "any" }]
+}

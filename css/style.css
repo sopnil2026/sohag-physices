@@ -193,3 +193,21 @@ body.app main{display:flex;justify-content:center}
 .tabbar a{display:flex;flex-direction:column;align-items:center;gap:.1rem;font-size:.72rem;color:#8a8f8c;position:relative;padding:.2rem}
 .tabbar a.on{color:var(--orange);font-weight:600}
 .tabbar .dot{position:absolute;top:2px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:#e03131}
+
+/* ---------- login / register screens (gradient style) ---------- */
+.lg{width:min(460px,100%);min-height:100vh;background:#fff;position:relative;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.12)}
+.lg-top{background:linear-gradient(160deg,#0f2a24,#0b8a5f 70%,#19b383);color:#fff;text-align:center;padding:2.2rem 1.2rem 5rem;position:relative;border-radius:0 0 50% 50%/0 0 34px 34px}
+.lg-top.sm{padding-bottom:4rem}
+.lg-top h1{font-size:1.9rem;margin:.6rem 0 .2rem} .lg-top p{margin:0;opacity:.9}
+.lg-logo{width:96px;height:96px;margin:0 auto;border-radius:26px;background:#fff;display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.lg-logo img{width:78px;height:78px;object-fit:contain}
+.lg-lang{position:absolute;right:1rem;top:1rem}
+.lg-card{position:relative;z-index:1;margin:-2.8rem 1.2rem 1.5rem;background:#fff;border-radius:22px;box-shadow:0 12px 40px rgba(15,42,36,.14);padding:1.4rem 1.2rem}
+.ic-in{display:flex!important;align-items:center;gap:.6rem;background:#f4f8f6;border:1px solid #e0ebe6;border-radius:14px;padding:0 .9rem;margin-bottom:.8rem!important}
+.ic-in:focus-within{border-color:var(--orange);box-shadow:0 0 0 3px rgba(11,138,95,.18)}
+.ic-in span{font-size:1.05rem}
+.ic-in input,.ic-in select{border:0!important;background:transparent!important;box-shadow:none!important;margin:0!important;padding:.85rem 0!important;flex:1;min-width:0}
+.eye{background:none;border:0;cursor:pointer;font-size:1.05rem;opacity:.6}
+.lg-btn{border-radius:14px;padding:.95rem;font-size:1.05rem;background:linear-gradient(90deg,#0b8a5f,#19b383)}
+.lg-sw{margin-top:1rem}
+.lg-card .grid-2{grid-template-columns:1fr}

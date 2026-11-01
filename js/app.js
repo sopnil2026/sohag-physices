@@ -198,17 +198,20 @@
     });
   };
 
-  V.login = () => {
-    return `<section class="auth"><form class="card form" id="loginForm" novalidate><div class="card-b">
-      <img class="auth-logo" src="assets/logo.png" alt="" width="64" height="64">
-      <h1>${t('login_h')}</h1><p class="muted">${t('login_s')}</p>
-      <label>${t('login_id')}<input name="id" required autocomplete="username"></label>
-      <label>${t('f_pass')}<input name="password" type="password" required autocomplete="current-password"></label>
+  const eye = '<button type="button" class="eye" aria-label="Show password" data-eye>👁</button>';
+  const lgTop = (title, sub, small) => `<div class="lg-top${small ? ' sm' : ''}">
+      <button class="lang ph-lang lg-lang" type="button" data-lang>${lang === 'bn' ? 'EN' : 'বাং'}</button>
+      <div class="lg-logo"><img src="assets/logo.png" alt="Sohag Physics" width="84" height="84"></div>
+      <h1>${title}</h1><p>${sub}</p></div>`;
+  V.login = () => `<section class="lg">${lgTop(t('welcome'), t('login_s'))}
+    <form class="lg-card form" id="loginForm" novalidate>
+      <label class="ic-in"><span>👤</span><input name="id" required autocomplete="username" placeholder="${t('login_id')}" aria-label="${t('login_id')}"></label>
+      <label class="ic-in"><span>🔒</span><input name="password" type="password" required autocomplete="current-password" placeholder="${t('f_pass')}" aria-label="${t('f_pass')}">${eye}</label>
       <p class="err" id="err" role="alert"></p>
-      <button class="btn block" type="submit">${t('login_btn')}</button>
-      <p class="center small">${t('no_acc')} <a href="#/register">${t('register')}</a></p>
-    </div></form></section>`;
-  };
+      <button class="btn block lg-btn" type="submit">${t('login_btn')}</button>
+      <p class="center small lg-sw">${t('no_acc')} <a href="#/register"><b>${t('register')}</b></a></p>
+      <p class="center small"><a href="#/home">🌐 ${t('home_site')}</a></p>
+    </form></section>`;
   V.login.after = () => {
     $('#loginForm').addEventListener('submit', async e => {
       e.preventDefault();
@@ -220,26 +223,22 @@
     });
   };
 
-  V.register = () => `<section class="auth"><form class="card form" id="regForm" novalidate><div class="card-b">
-      <h1>${t('reg_h')}</h1><p class="muted">${t('reg_s')}</p>
-      <label>${t('f_name')} *<input name="name" required autocomplete="name"></label>
+  V.register = () => `<section class="lg">${lgTop(t('reg_h'), t('reg_s'), true)}
+    <form class="lg-card form" id="regForm" novalidate>
+      <label class="ic-in"><span>👤</span><input name="name" required autocomplete="name" placeholder="${t('f_name')} *" aria-label="${t('f_name')}"></label>
       <div class="grid-2 tight">
-        <label>${t('f_phone')} *<input name="phone" type="tel" required autocomplete="tel"></label>
-        <label>${t('f_email')} *<input name="email" type="email" required autocomplete="email"></label>
+        <label class="ic-in"><span>📞</span><input name="phone" type="tel" required autocomplete="tel" placeholder="${t('f_phone')} *" aria-label="${t('f_phone')}"></label>
+        <label class="ic-in"><span>✉️</span><input name="email" type="email" required autocomplete="email" placeholder="${t('f_email')} *" aria-label="${t('f_email')}"></label>
       </div>
-      <div class="grid-2 tight">
-        <label>${t('f_class')} *<select name="cls" required>${classOpts()}</select></label>
-        <label>${t('f_school')} *<input name="school" required></label>
-      </div>
-      <label>${t('f_college')}<input name="college"></label>
-      <div class="grid-2 tight">
-        <label>${t('f_pass')} *<input name="password" type="password" required minlength="6" autocomplete="new-password"></label>
-        <label>${t('f_pass2')} *<input name="password2" type="password" required autocomplete="new-password"></label>
-      </div>
+      <label class="ic-in"><span>🎓</span><select name="cls" required aria-label="${t('f_class')}">${classOpts()}</select></label>
+      <label class="ic-in"><span>🏫</span><input name="school" required placeholder="${t('f_school')} *" aria-label="${t('f_school')}"></label>
+      <label class="ic-in"><span>🏛️</span><input name="college" placeholder="${t('f_college')}" aria-label="${t('f_college')}"></label>
+      <label class="ic-in"><span>🔒</span><input name="password" type="password" required minlength="6" autocomplete="new-password" placeholder="${t('f_pass')} *" aria-label="${t('f_pass')}">${eye}</label>
+      <label class="ic-in"><span>🔒</span><input name="password2" type="password" required autocomplete="new-password" placeholder="${t('f_pass2')} *" aria-label="${t('f_pass2')}"></label>
       <p class="err" id="err" role="alert"></p>
-      <button class="btn block" type="submit">${t('reg_btn')}</button>
-      <p class="center small">${t('has_acc')} <a href="#/login">${t('login')}</a></p>
-    </div></form></section>`;
+      <button class="btn block lg-btn" type="submit">${t('reg_btn')}</button>
+      <p class="center small lg-sw">${t('has_acc')} <a href="#/login"><b>${t('login')}</b></a></p>
+    </form></section>`;
   V.register.after = () => {
     $('#regForm').addEventListener('submit', async e => {
       e.preventDefault();
@@ -562,12 +561,14 @@
     let name = (location.hash.replace(/^#\/?/, '') || 'home').split('?')[0];
     const view = V[name] || V['404'];
     if (!V[name]) name = '404';
-    document.body.classList.toggle('app', APP.includes(name));
+    document.body.classList.toggle('app', APP.includes(name) || ((name === 'login' || name === 'register') && !Store.isAdmin()));
     const html = view();
     if (name === 'logout') return;
     $('#main').innerHTML = html;
     chrome();
     if (view.after) view.after();
+    $$('[data-eye]').forEach(b => b.addEventListener('click', () => { const i = b.parentElement.querySelector('input'); i.type = i.type === 'password' ? 'text' : 'password'; }));
+    $$('[data-lang]').forEach(b => b.addEventListener('click', () => $('#langBtn').click()));
     window.scrollTo(0, 0);
     $('#menu').classList.remove('open'); $('#burger').setAttribute('aria-expanded', 'false');
     $$('.menu > a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#/' + name));
@@ -601,5 +602,8 @@
   $$('.dd-btn').forEach(b => b.addEventListener('click', () => b.parentElement.classList.toggle('open')));
   document.addEventListener('click', e => { if (!e.target.closest('.dd')) $$('.dd').forEach(d => d.classList.remove('open')); });
   window.addEventListener('hashchange', route);
+  // Opened as an app (installed / Android WebView / ?app=1): start at login, or the dashboard when signed in
+  const asApp = matchMedia('(display-mode: standalone)').matches || /[?&]app=1/.test(location.search) || /SohagApp/i.test(navigator.userAgent);
+  if (asApp && !location.hash) { const ss = Store.session(); location.hash = !ss ? '#/login' : ss.role === 'admin' ? '#/admin' : '#/dashboard'; }
   route();
 })();
